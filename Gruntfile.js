@@ -1,8 +1,8 @@
 module.exports = function(grunt) {
 
  /*
-  * Determine the environent to use, based on the "env" commandline option, then load the corresponding
-  * environment-specific configuration file.
+  * Determine the environent to use, based on the "env" commandline option,
+  * then load the corresponding environment-specific configuration file.
   */
   var envToUse = grunt.option('env') || 'production';
   var env = require('./environments/' + envToUse + '.js');
@@ -13,26 +13,58 @@ module.exports = function(grunt) {
   var s3 = require('../sensitive_data/s3.js')
 
   grunt.initConfig({
+    /**
+     * Read in package.json variables
+     */
     pkg: grunt.file.readJSON('package.json'),
-    banner: '/*! <%= pkg.name %> by <%= pkg.author.name %> - v<%= pkg.version %> - ' +
-      '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
-      '* https://<%= pkg.homepage %>/\n' +
-      '* Copyright (c) <%= grunt.template.today("yyyy") %> ' +
-      '<%= pkg.author.name %>; */',
 
+    /**
+     * Set a release directory for deploying the app
+     */
+    releaseDirectory: 'releases/<%= pkg.version %>-' + envToUse,
+
+    /**
+     * The banner is the comment that is placed at the top of our compiled
+     * source files.
+     */
+    banner: '/**\n\nWelcome :)\n\n' +
+      ' * Source:  <%= pkg.homepage %>\n' +
+      ' * Name:    <%= pkg.name %>\n' +
+      ' * Author:  <%= pkg.author.name %> <<%= pkg.author.email %>>\n' +
+      ' * Version: v<%= pkg.version %>\n' +
+      ' * Date:    <%= grunt.template.today("yyyy-mm-dd") %>\n\n*/\n',
     htmlbanner: '<!-- \n\nWelcome :)\n\n' +
       'Source:  <%= pkg.homepage %>\n' +
       'Name:    <%= pkg.name %>\n' +
       'Author:  <%= pkg.author.name %> <<%= pkg.author.email %>>\n' +
       'Version: v<%= pkg.version %>\n' +
-      'Date:    <%= grunt.template.today("yyyy-mm-dd") %>\n\n-->',
+      'Date:    <%= grunt.template.today("yyyy-mm-dd") %>\n\n-->\n',
+    usebanner: {
+      html: {
+          options: {
+              position: 'top',
+              banner: '<%= htmlbanner %>'
+          },
+          files: {
+              src: '<%= releaseDirectory %>/index.html'
+          }
+      }
+    },
     
-    releaseDirectory: 'releases/<%= pkg.version %>-' + envToUse,
+    /**
+     * The directories to delete when `grunt clean` is executed.
+     */
     clean: {
       release : [
         '<%= releaseDirectory %>/'
       ]
     },
+
+    /**
+     * The `copy` task just copies files from A to B. We use it to copy our
+     * project assets (images, fonts, etc.) into the release dir before
+     * pushing them to S3.
+     */
     copy: {
       release:{
         files: [
@@ -48,17 +80,10 @@ module.exports = function(grunt) {
         ]
       }
     },
-    usebanner: {
-      html: {
-          options: {
-              position: 'top',
-              banner: '<%= htmlbanner %>'
-          },
-          files: {
-              src: '<%= releaseDirectory %>/index.html'
-          }
-      }
-    },
+
+    /**
+     * Deploy to S3
+     */
     aws_s3: {
       release: {
         options: {
@@ -89,13 +114,21 @@ module.exports = function(grunt) {
         ]
       }
     },
+
+    /**
+     * Remove unused CSS
+     */
     uncss: {
       dist: {
         files: {
-          'src/css/resume.css': ['src/index2.html']
+          'src/css/resume.css': ['src/resume.html']
         }
       }
     },
+
+    /**
+     * Minimize CSS
+     */
     cssmin: {
       target: {
         files: [{
@@ -107,6 +140,10 @@ module.exports = function(grunt) {
         }]
       }
     },
+
+    /**
+     * Reduce image sizes
+     */
     imagemin: {
        dist: {
           options: {

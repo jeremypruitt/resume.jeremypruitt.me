@@ -1,3 +1,9 @@
+/*** uncss> filename: src/css/resume.css ***/
+
+/*** uncss> filename: src/css/resume.css ***/
+
+/*** uncss> filename: src/css/resume.css ***/
+
 /*** uncss> filename: src/css/main-ng.css ***/
 
 article,
@@ -5,11 +11,6 @@ aside,
 header,
 section {
   display: block;
-}
-
-img {
-  border: 0;
-  max-width: 100%;
 }
 
 html {

@@ -46,7 +46,7 @@ module.exports = function(grunt) {
               banner: '<%= htmlbanner %>'
           },
           files: {
-              src: '<%= releaseDirectory %>/index.html'
+              src: '<%= releaseDirectory %>/resume.html'
           }
       }
     },
@@ -137,22 +137,16 @@ module.exports = function(grunt) {
         }]
       }
     },
-
+    
     /**
-     * Reduce image sizes
+     * Point resume.html to minified css
      */
-    imagemin: {
-       dist: {
-          options: {
-            optimizationLevel: 5
-          },
-          files: [{
-             expand: true,
-             cwd: 'src/img',
-             src: ['*.{png,jpg,gif,svg}'],
-             dest: '<%= releaseDirectory %>/img'
-          }]
-       }
+    processhtml: {
+      dist: {
+        files: {
+        '<%= releaseDirectory %>/resume.html': ['src/resume.html']
+        }
+      }
     }
   });
 
@@ -162,11 +156,19 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-aws-s3');
   grunt.loadNpmTasks('grunt-uncss');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
+  grunt.loadNpmTasks('grunt-processhtml');
 
-  grunt.registerTask('deploy',[
+  grunt.registerTask('build',[
       'clean:release',
       'copy:release',
-      'usebanner',
+      'uncss',
+      'cssmin',
+      'processhtml',
+      'usebanner'
+  ]);
+
+  grunt.registerTask('deploy',[
+      'build',
       'aws_s3'
   ]);
 
